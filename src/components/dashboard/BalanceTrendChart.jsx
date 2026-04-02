@@ -21,7 +21,7 @@ export default function BalanceTrendChart() {
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="h-[420px] pr-2">
+      <CardContent className="h-105 pr-2">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={balanceTrendData} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
             <defs>

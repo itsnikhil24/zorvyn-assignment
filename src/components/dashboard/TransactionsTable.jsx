@@ -51,12 +51,12 @@ export default function TransactionsTable() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search..."
-              className="h-11 w-[220px] rounded-2xl pl-9"
+              className="h-11 w-55 rounded-2xl pl-9"
             />
           </div>
 
           <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="h-11 w-[160px] rounded-2xl">
+            <SelectTrigger className="h-11 w-40 rounded-2xl">
               <SelectValue placeholder="All Types" />
             </SelectTrigger>
             <SelectContent>
@@ -67,7 +67,7 @@ export default function TransactionsTable() {
           </Select>
 
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="h-11 w-[180px] rounded-2xl">
+            <SelectTrigger className="h-11 w-45 rounded-2xl">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>

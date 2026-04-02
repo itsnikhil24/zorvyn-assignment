@@ -19,7 +19,7 @@ export default function SpendingBreakdownChart() {
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="h-[420px]">
+      <CardContent className="h-105">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
