@@ -1,7 +1,6 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart3, TrendingDown, DollarSign } from "lucide-react";
-import { insightsData } from "../../data/dashboardData";
 
 function InsightBox({ icon, label, title, subtitle }) {
   return (
@@ -18,7 +17,13 @@ function InsightBox({ icon, label, title, subtitle }) {
   );
 }
 
-export default function Insights() {
+export default function Insights({ insightsData }) {
+  const change = insightsData?.monthlyChange ?? 0;
+  const changeLabel =
+    change > 0
+      ? `Up by $${change.toLocaleString()}`
+      : `Down by $${Math.abs(change).toLocaleString()}`;
+
   return (
     <Card className="rounded-3xl border-slate-200 shadow-sm">
       <CardContent className="p-6">
@@ -28,19 +33,21 @@ export default function Insights() {
           <InsightBox
             icon={<BarChart3 className="h-4 w-4" />}
             label="Highest Spending"
-            title={insightsData.highestSpending.category}
-            subtitle={insightsData.highestSpending.total}
+            title={insightsData?.highestSpending?.category ?? "N/A"}
+            subtitle={`Total ${insightsData?.highestSpending?.total ?? "$0"}`}
           />
           <InsightBox
             icon={<TrendingDown className="h-4 w-4" />}
             label="Monthly Change"
-            title={insightsData.monthlyChange}
-            subtitle="Spending decreased"
+            title={`${
+              change > 0 ? "+" : "-"
+            }$${Math.abs(change).toLocaleString()}`}
+            subtitle={changeLabel}
           />
           <InsightBox
             icon={<DollarSign className="h-4 w-4" />}
             label="Avg. Transaction"
-            title={insightsData.avgTransaction}
+            title={insightsData?.avgTransaction ?? "$0"}
             subtitle="Per expense"
           />
         </div>

@@ -1,131 +1,196 @@
 import React, { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { ArrowUpDown, Search } from "lucide-react";
-import { transactions } from "../../data/dashboardData";
 
-export default function TransactionsTable() {
+const formatDate = (dateString) =>
+  new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  }).format(new Date(dateString));
+
+export default function TransactionsTable({ transactions = [] }) {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
+  // 🔹 Get unique categories dynamically
   const categories = useMemo(() => {
-    const unique = [...new Set(transactions.map((t) => t.category))];
-    return unique;
-  }, []);
+    return ["all", ...new Set(transactions.map((t) => t.category))];
+  }, [transactions]);
 
+  // 🔹 Filtering Logic
   const filteredTransactions = useMemo(() => {
-    return transactions.filter((t) => {
+    return transactions.filter((item) => {
+      // Search filter
       const matchesSearch =
-        t.title.toLowerCase().includes(search.toLowerCase()) ||
-        t.category.toLowerCase().includes(search.toLowerCase());
+        item.title.toLowerCase().includes(search.toLowerCase()) ||
+        item.category.toLowerCase().includes(search.toLowerCase());
 
-      const matchesType = typeFilter === "all" ? true : t.type === typeFilter;
+      // Type filter
+      const matchesType =
+        typeFilter === "all" || item.type === typeFilter;
+
+      // Category filter
       const matchesCategory =
-        categoryFilter === "all" ? true : t.category === categoryFilter;
+        categoryFilter === "all" || item.category === categoryFilter;
 
-      return matchesSearch && matchesType && matchesCategory;
+      // Date filter
+      const itemDate = new Date(item.date);
+      const matchesStartDate = startDate
+        ? itemDate >= new Date(startDate)
+        : true;
+      const matchesEndDate = endDate
+        ? itemDate <= new Date(endDate)
+        : true;
+
+      return (
+        matchesSearch &&
+        matchesType &&
+        matchesCategory &&
+        matchesStartDate &&
+        matchesEndDate
+      );
     });
-  }, [search, typeFilter, categoryFilter]);
+  }, [transactions, search, typeFilter, categoryFilter, startDate, endDate]);
 
   return (
     <Card className="rounded-3xl border-slate-200 shadow-sm">
-      <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <CardHeader>
         <CardTitle className="text-2xl font-semibold text-slate-700">
-          Transactions
+          Recent Transactions
         </CardTitle>
+      </CardHeader>
 
-        <div className="flex flex-col gap-3 md:flex-row md:items-center">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <Input
+      <CardContent className="space-y-4">
+        {/* 🔥 FILTER SECTION */}
+        {/* 🔥 FILTER SECTION */}
+        <div className="space-y-3">
+          <div className="grid gap-3 md:grid-cols-5">
+            {/* Search */}
+            <input
+              type="text"
+              placeholder="Search..."
+              className="rounded-xl border p-2 text-sm"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search..."
-              className="h-11 w-55 rounded-2xl pl-9"
+            />
+
+            {/* Type Filter */}
+            <select
+              className="rounded-xl border p-2 text-sm"
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+
+            {/* Category Filter */}
+            <select
+              className="rounded-xl border p-2 text-sm"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+            >
+              {categories.map((cat, i) => (
+                <option key={i} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+
+            {/* Start Date */}
+            <input
+              type="date"
+              className="rounded-xl border p-2 text-sm"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+
+            {/* End Date */}
+            <input
+              type="date"
+              className="rounded-xl border p-2 text-sm"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
             />
           </div>
 
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="h-11 w-40 rounded-2xl">
-              <SelectValue placeholder="All Types" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="income">Income</SelectItem>
-              <SelectItem value="expense">Expense</SelectItem>
-            </SelectContent>
-          </Select>
+          {/* ✅ NEW SECTION UNDER FILTER */}
+          <div className="flex items-center justify-between">
+            {/* Results count */}
+            <p className="text-sm text-slate-500">
+              Showing <span className="font-semibold">{filteredTransactions.length}</span>{" "}
+              of <span className="font-semibold">{transactions.length}</span> transactions
+            </p>
 
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="h-11 w-45 rounded-2xl">
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <button className="inline-flex h-11 items-center gap-2 rounded-2xl border px-4 text-sm font-medium text-slate-600 hover:bg-slate-50">
-            <ArrowUpDown className="h-4 w-4" />
-            Date
-          </button>
+            {/* Reset button */}
+            <button
+              onClick={() => {
+                setSearch("");
+                setTypeFilter("all");
+                setCategoryFilter("all");
+                setStartDate("");
+                setEndDate("");
+              }}
+              className="rounded-xl border px-3 py-1.5 text-sm hover:bg-slate-100"
+            >
+              Reset Filters
+            </button>
+          </div>
         </div>
-      </CardHeader>
 
-      <CardContent>
-        <div className="overflow-hidden rounded-2xl border">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-slate-50">
-                <TableHead>Transaction</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-              </TableRow>
-            </TableHeader>
-
-            <TableBody>
-              {filteredTransactions.map((tx) => (
-                <TableRow key={tx.id} className="hover:bg-slate-50">
-                  <TableCell className="font-medium">
-                    {tx.title}
-                  </TableCell>
-                  <TableCell>{tx.date}</TableCell>
-                  <TableCell>{tx.category}</TableCell>
-                  <TableCell
-                    className={`text-right font-semibold ${
-                      tx.type === "income" ? "text-emerald-500" : "text-red-500"
-                    }`}
+        {/* 🔥 TABLE */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-slate-200 text-sm text-slate-500">
+                <th className="py-3 pr-4 font-medium">Title</th>
+                <th className="py-3 pr-4 font-medium">Date</th>
+                <th className="py-3 pr-4 font-medium">Category</th>
+                <th className="py-3 pr-4 font-medium">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredTransactions.length > 0 ? (
+                filteredTransactions.map((item) => (
+                  <tr
+                    key={item.id}
+                    className="border-b border-slate-100 text-sm last:border-b-0"
                   >
-                    {tx.amount}
-                  </TableCell>
-                </TableRow>
-              ))}
-
-              {filteredTransactions.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={4} className="py-10 text-center text-slate-500">
-                    No transactions found.
-                  </TableCell>
-                </TableRow>
+                    <td className="py-4 pr-4 font-medium text-slate-800">
+                      {item.title}
+                    </td>
+                    <td className="py-4 pr-4 text-slate-500">
+                      {formatDate(item.date)}
+                    </td>
+                    <td className="py-4 pr-4 text-slate-500">
+                      {item.category}
+                    </td>
+                    <td
+                      className={`py-4 pr-4 font-semibold ${item.type === "income"
+                          ? "text-emerald-500"
+                          : "text-red-500"
+                        }`}
+                    >
+                      {item.type === "income" ? "+" : "-"}${item.amount}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="4"
+                    className="py-6 text-center text-slate-400"
+                  >
+                    No transactions found
+                  </td>
+                </tr>
               )}
-            </TableBody>
-          </Table>
+            </tbody>
+          </table>
         </div>
       </CardContent>
     </Card>

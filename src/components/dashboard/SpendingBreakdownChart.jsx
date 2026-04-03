@@ -8,9 +8,8 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { spendingBreakdownData } from "../../data/dashboardData";
 
-export default function SpendingBreakdownChart() {
+export default function SpendingBreakdownChart({ data = [] }) {
   return (
     <Card className="rounded-3xl border-slate-200 shadow-sm">
       <CardHeader className="pb-2">
@@ -19,22 +18,22 @@ export default function SpendingBreakdownChart() {
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="h-105">
+      <CardContent className="h-[26rem]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
-              data={spendingBreakdownData}
+              data={data}
               dataKey="value"
               nameKey="name"
               innerRadius={90}
               outerRadius={130}
               paddingAngle={3}
             >
-              {spendingBreakdownData.map((entry, index) => (
+              {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip formatter={(value) => `$${value}`} />
             <Legend />
           </PieChart>
         </ResponsiveContainer>

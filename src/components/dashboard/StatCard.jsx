@@ -2,8 +2,8 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function StatCard({ title, value, icon, tone = "positive" }) {
-  const valueClass =
-    tone === "negative" ? "text-red-500" : "text-emerald-500";
+  const valueClass = tone === "negative" ? "text-red-500" : "text-emerald-500";
+  const iconClass = tone === "negative" ? "text-red-500" : "text-emerald-500";
 
   return (
     <Card className="rounded-3xl border-slate-200 shadow-sm">
@@ -15,9 +15,7 @@ export default function StatCard({ title, value, icon, tone = "positive" }) {
           </p>
         </div>
 
-        <div className={tone === "negative" ? "text-red-500" : "text-emerald-500"}>
-          {icon}
-        </div>
+        <div className={iconClass}>{icon}</div>
       </CardContent>
     </Card>
   );

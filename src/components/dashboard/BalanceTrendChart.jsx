@@ -10,9 +10,8 @@ import {
   CartesianGrid,
   Legend,
 } from "recharts";
-import { balanceTrendData } from "../../data/dashboardData";
 
-export default function BalanceTrendChart() {
+export default function BalanceTrendChart({ data = [] }) {
   return (
     <Card className="rounded-3xl border-slate-200 shadow-sm">
       <CardHeader className="pb-2">
@@ -21,9 +20,12 @@ export default function BalanceTrendChart() {
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="h-105 pr-2">
+      <CardContent className="h-[26rem] pr-2">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={balanceTrendData} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
+          <AreaChart
+            data={data}
+            margin={{ top: 20, right: 20, left: 0, bottom: 0 }}
+          >
             <defs>
               <linearGradient id="incomeFill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopOpacity={0.28} />
