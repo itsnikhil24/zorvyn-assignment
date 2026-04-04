@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Download, Trash2, Edit2, ArrowUpDown } from 'lucide-react';
+import { Search, Download, Trash2, Edit2, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const TransactionTable = ({ transactions, role, deleteTransaction, isOverview = false }) => {
+const TransactionTable = ({ transactions, role, deleteTransaction, onEditClick, isOverview = false }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All types');
   const [filterCategory, setFilterCategory] = useState('All categories');
@@ -9,6 +9,10 @@ const TransactionTable = ({ transactions, role, deleteTransaction, isOverview = 
   
   // Sorting State
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Dynamically generate filter options based on existing data
   const uniqueCategories = useMemo(() => {
@@ -29,6 +33,7 @@ const TransactionTable = ({ transactions, role, deleteTransaction, isOverview = 
       direction = 'desc';
     }
     setSortConfig({ key, direction });
+    setCurrentPage(1); // Reset to first page when sorting changes
   };
 
   // Filter and Sort Data
@@ -45,8 +50,8 @@ const TransactionTable = ({ transactions, role, deleteTransaction, isOverview = 
         return matchesSearch && matchesType && matchesCategory && matchesMonth;
       });
     } else {
-      // In overview, we just want the latest raw transactions
-      filtered = [...transactions].slice(0, 5);
+      // In overview, we just want the latest raw transactions (sliced later)
+      filtered = [...transactions];
     }
 
     // Apply Sorting
@@ -60,6 +65,17 @@ const TransactionTable = ({ transactions, role, deleteTransaction, isOverview = 
       return 0;
     });
   }, [transactions, isOverview, searchTerm, filterType, filterCategory, filterMonth, sortConfig]);
+
+  // Calculate Pagination Data
+  const totalPages = Math.ceil(processedTransactions.length / itemsPerPage);
+  
+  const paginatedTransactions = useMemo(() => {
+    if (isOverview) {
+      return processedTransactions.slice(0, 5); // Overview always shows top 5
+    }
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return processedTransactions.slice(startIndex, startIndex + itemsPerPage);
+  }, [processedTransactions, isOverview, currentPage]);
 
   return (
     <div className={`space-y-6 animate-fade-in ${isOverview ? 'bg-[#13131a] rounded-xl border border-[#22222a] overflow-hidden' : ''}`}>
@@ -75,7 +91,10 @@ const TransactionTable = ({ transactions, role, deleteTransaction, isOverview = 
               placeholder="Search transactions..." 
               className="w-full bg-[#13131a] border border-[#22222a] rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-[#8b5cf6] text-white transition-colors"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1); // Reset page on search
+              }}
             />
           </div>
 
@@ -84,7 +103,10 @@ const TransactionTable = ({ transactions, role, deleteTransaction, isOverview = 
             <select 
               className="bg-[#13131a] border border-[#22222a] rounded-lg px-4 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-[#8b5cf6] cursor-pointer"
               value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
+              onChange={(e) => {
+                setFilterType(e.target.value);
+                setCurrentPage(1); // Reset page on filter change
+              }}
             >
               <option value="All types">All types</option>
               <option value="Income">Income</option>
@@ -94,7 +116,10 @@ const TransactionTable = ({ transactions, role, deleteTransaction, isOverview = 
             <select 
               className="bg-[#13131a] border border-[#22222a] rounded-lg px-4 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-[#8b5cf6] cursor-pointer"
               value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
+              onChange={(e) => {
+                setFilterCategory(e.target.value);
+                setCurrentPage(1); // Reset page on filter change
+              }}
             >
               {uniqueCategories.map(cat => (
                 <option key={cat} value={cat}>{cat}</option>
@@ -104,7 +129,10 @@ const TransactionTable = ({ transactions, role, deleteTransaction, isOverview = 
             <select 
               className="bg-[#13131a] border border-[#22222a] rounded-lg px-4 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-[#8b5cf6] cursor-pointer"
               value={filterMonth}
-              onChange={(e) => setFilterMonth(e.target.value)}
+              onChange={(e) => {
+                setFilterMonth(e.target.value);
+                setCurrentPage(1); // Reset page on filter change
+              }}
             >
               {uniqueMonths.map(month => (
                 <option key={month} value={month}>{month}</option>
@@ -127,7 +155,7 @@ const TransactionTable = ({ transactions, role, deleteTransaction, isOverview = 
       )}
 
       {/* Table Section */}
-      <div className={`${!isOverview ? 'bg-[#13131a] rounded-xl border border-[#22222a]' : ''} overflow-x-auto`}>
+      <div className={`${!isOverview ? 'bg-[#13131a] rounded-xl border border-[#22222a] flex flex-col' : ''} overflow-x-auto`}>
         <table className="w-full text-left text-sm text-gray-300">
           <thead className="bg-[#13131a] text-gray-400 text-xs uppercase border-b border-[#22222a]">
             <tr>
@@ -161,14 +189,14 @@ const TransactionTable = ({ transactions, role, deleteTransaction, isOverview = 
             </tr>
           </thead>
           <tbody>
-            {processedTransactions.length === 0 ? (
+            {paginatedTransactions.length === 0 ? (
               <tr>
                 <td colSpan={role === 'admin' && !isOverview ? 6 : 5} className="text-center py-10 text-gray-500">
                   No transactions found matching your filters.
                 </td>
               </tr>
             ) : (
-              processedTransactions.map((txn) => (
+              paginatedTransactions.map((txn) => (
                 <tr key={txn.id} className="border-b border-[#22222a] hover:bg-[#1a1a24] transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">{txn.date}</td>
                   <td className="px-6 py-4 font-medium text-white">{txn.description}</td>
@@ -188,7 +216,11 @@ const TransactionTable = ({ transactions, role, deleteTransaction, isOverview = 
                   {!isOverview && role === 'admin' && (
                     <td className="px-6 py-4">
                       <div className="flex justify-center gap-2">
-                        <button className="p-1.5 bg-[#1f1f2e] rounded text-gray-400 hover:text-white transition-colors border border-[#22222a]" title="Edit">
+                        <button 
+                          onClick={() => onEditClick && onEditClick(txn)}
+                          className="p-1.5 bg-[#1f1f2e] rounded text-gray-400 hover:text-white transition-colors border border-[#22222a]" 
+                          title="Edit"
+                        >
                           <Edit2 size={14} />
                         </button>
                         <button 
@@ -206,6 +238,37 @@ const TransactionTable = ({ transactions, role, deleteTransaction, isOverview = 
             )}
           </tbody>
         </table>
+
+        {/* Pagination Footer */}
+        {!isOverview && processedTransactions.length > 0 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-[#22222a] bg-[#13131a] mt-auto">
+            <p className="text-sm text-gray-400">
+              Showing <span className="font-medium text-white">{((currentPage - 1) * itemsPerPage) + 1}</span> to <span className="font-medium text-white">{Math.min(currentPage * itemsPerPage, processedTransactions.length)}</span> of <span className="font-medium text-white">{processedTransactions.length}</span> results
+            </p>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-md bg-[#1f1f2e] text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#2a2a35] transition-colors border border-[#22222a]"
+              >
+                <ChevronLeft size={16} /> Prev
+              </button>
+              
+              <div className="px-2 text-sm text-gray-400">
+                Page <span className="text-white">{currentPage}</span> of {totalPages}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-md bg-[#1f1f2e] text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#2a2a35] transition-colors border border-[#22222a]"
+              >
+                Next <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
