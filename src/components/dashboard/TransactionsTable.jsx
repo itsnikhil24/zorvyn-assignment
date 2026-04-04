@@ -1,198 +1,214 @@
-import React, { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useMemo } from 'react';
+import { Search, Download, Trash2, Edit2, ArrowUpDown } from 'lucide-react';
 
-const formatDate = (dateString) =>
-  new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  }).format(new Date(dateString));
+const TransactionTable = ({ transactions, role, deleteTransaction, isOverview = false }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('All types');
+  const [filterCategory, setFilterCategory] = useState('All categories');
+  const [filterMonth, setFilterMonth] = useState('All months');
+  
+  // Sorting State
+  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
 
-export default function TransactionsTable({ transactions = [] }) {
-  const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-
-  // 🔹 Get unique categories dynamically
-  const categories = useMemo(() => {
-    return ["all", ...new Set(transactions.map((t) => t.category))];
+  // Dynamically generate filter options based on existing data
+  const uniqueCategories = useMemo(() => {
+    const cats = new Set(transactions.map(t => t.category));
+    return ['All categories', ...Array.from(cats).sort()];
   }, [transactions]);
 
-  // 🔹 Filtering Logic
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter((item) => {
-      // Search filter
-      const matchesSearch =
-        item.title.toLowerCase().includes(search.toLowerCase()) ||
-        item.category.toLowerCase().includes(search.toLowerCase());
+  const uniqueMonths = useMemo(() => {
+    // Extract YYYY-MM from dates
+    const months = new Set(transactions.map(t => t.date.substring(0, 7)));
+    return ['All months', ...Array.from(months).sort().reverse()];
+  }, [transactions]);
 
-      // Type filter
-      const matchesType =
-        typeFilter === "all" || item.type === typeFilter;
+  // Handle sorting logic
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
 
-      // Category filter
-      const matchesCategory =
-        categoryFilter === "all" || item.category === categoryFilter;
+  // Filter and Sort Data
+  const processedTransactions = useMemo(() => {
+    let filtered = transactions;
 
-      // Date filter
-      const itemDate = new Date(item.date);
-      const matchesStartDate = startDate
-        ? itemDate >= new Date(startDate)
-        : true;
-      const matchesEndDate = endDate
-        ? itemDate <= new Date(endDate)
-        : true;
+    if (!isOverview) {
+      filtered = transactions.filter(txn => {
+        const matchesSearch = txn.description.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesType = filterType === 'All types' || txn.type === filterType.toLowerCase();
+        const matchesCategory = filterCategory === 'All categories' || txn.category === filterCategory;
+        const matchesMonth = filterMonth === 'All months' || txn.date.startsWith(filterMonth);
+        
+        return matchesSearch && matchesType && matchesCategory && matchesMonth;
+      });
+    } else {
+      // In overview, we just want the latest raw transactions
+      filtered = [...transactions].slice(0, 5);
+    }
 
-      return (
-        matchesSearch &&
-        matchesType &&
-        matchesCategory &&
-        matchesStartDate &&
-        matchesEndDate
-      );
+    // Apply Sorting
+    return filtered.sort((a, b) => {
+      if (a[sortConfig.key] < b[sortConfig.key]) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (a[sortConfig.key] > b[sortConfig.key]) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
     });
-  }, [transactions, search, typeFilter, categoryFilter, startDate, endDate]);
+  }, [transactions, isOverview, searchTerm, filterType, filterCategory, filterMonth, sortConfig]);
 
   return (
-    <Card className="rounded-3xl border-slate-200 shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-2xl font-semibold text-slate-700">
-          Recent Transactions
-        </CardTitle>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        {/* 🔥 FILTER SECTION */}
-        {/* 🔥 FILTER SECTION */}
-        <div className="space-y-3">
-          <div className="grid gap-3 md:grid-cols-5">
-            {/* Search */}
-            <input
-              type="text"
-              placeholder="Search..."
-              className="rounded-xl border p-2 text-sm"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+    <div className={`space-y-6 animate-fade-in ${isOverview ? 'bg-[#13131a] rounded-xl border border-[#22222a] overflow-hidden' : ''}`}>
+      
+      {/* Filters Section (Hidden in Overview Mode) */}
+      {!isOverview && (
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-4 bg-[#0a0a0f] p-1">
+          {/* Search Bar */}
+          <div className="relative w-full lg:flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+            <input 
+              type="text" 
+              placeholder="Search transactions..." 
+              className="w-full bg-[#13131a] border border-[#22222a] rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-[#8b5cf6] text-white transition-colors"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
+          </div>
 
-            {/* Type Filter */}
-            <select
-              className="rounded-xl border p-2 text-sm"
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
+          {/* Dropdowns and Actions */}
+          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+            <select 
+              className="bg-[#13131a] border border-[#22222a] rounded-lg px-4 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-[#8b5cf6] cursor-pointer"
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
             >
-              <option value="all">All</option>
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
+              <option value="All types">All types</option>
+              <option value="Income">Income</option>
+              <option value="Expense">Expense</option>
             </select>
 
-            {/* Category Filter */}
-            <select
-              className="rounded-xl border p-2 text-sm"
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
+            <select 
+              className="bg-[#13131a] border border-[#22222a] rounded-lg px-4 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-[#8b5cf6] cursor-pointer"
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
             >
-              {categories.map((cat, i) => (
-                <option key={i} value={cat}>
-                  {cat}
-                </option>
+              {uniqueCategories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
 
-            {/* Start Date */}
-            <input
-              type="date"
-              className="rounded-xl border p-2 text-sm"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-
-            {/* End Date */}
-            <input
-              type="date"
-              className="rounded-xl border p-2 text-sm"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
-          </div>
-
-          {/* ✅ NEW SECTION UNDER FILTER */}
-          <div className="flex items-center justify-between">
-            {/* Results count */}
-            <p className="text-sm text-slate-500">
-              Showing <span className="font-semibold">{filteredTransactions.length}</span>{" "}
-              of <span className="font-semibold">{transactions.length}</span> transactions
-            </p>
-
-            {/* Reset button */}
-            <button
-              onClick={() => {
-                setSearch("");
-                setTypeFilter("all");
-                setCategoryFilter("all");
-                setStartDate("");
-                setEndDate("");
-              }}
-              className="rounded-xl border px-3 py-1.5 text-sm hover:bg-slate-100"
+            <select 
+              className="bg-[#13131a] border border-[#22222a] rounded-lg px-4 py-2.5 text-sm text-gray-300 focus:outline-none focus:border-[#8b5cf6] cursor-pointer"
+              value={filterMonth}
+              onChange={(e) => setFilterMonth(e.target.value)}
             >
-              Reset Filters
+              {uniqueMonths.map(month => (
+                <option key={month} value={month}>{month}</option>
+              ))}
+            </select>
+
+            <button className="flex items-center gap-2 bg-[#13131a] border border-[#22222a] hover:bg-[#1a1a24] text-gray-300 px-4 py-2.5 rounded-lg text-sm transition-colors font-medium">
+              <Download size={16} /> CSV
             </button>
           </div>
         </div>
+      )}
 
-        {/* 🔥 TABLE */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-slate-200 text-sm text-slate-500">
-                <th className="py-3 pr-4 font-medium">Title</th>
-                <th className="py-3 pr-4 font-medium">Date</th>
-                <th className="py-3 pr-4 font-medium">Category</th>
-                <th className="py-3 pr-4 font-medium">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTransactions.length > 0 ? (
-                filteredTransactions.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="border-b border-slate-100 text-sm last:border-b-0"
-                  >
-                    <td className="py-4 pr-4 font-medium text-slate-800">
-                      {item.title}
-                    </td>
-                    <td className="py-4 pr-4 text-slate-500">
-                      {formatDate(item.date)}
-                    </td>
-                    <td className="py-4 pr-4 text-slate-500">
-                      {item.category}
-                    </td>
-                    <td
-                      className={`py-4 pr-4 font-semibold ${item.type === "income"
-                          ? "text-emerald-500"
-                          : "text-red-500"
-                        }`}
-                    >
-                      {item.type === "income" ? "+" : "-"}${item.amount}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="4"
-                    className="py-6 text-center text-slate-400"
-                  >
-                    No transactions found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      {/* Header for Overview Mode */}
+      {isOverview && (
+        <div className="p-5 border-b border-[#22222a] flex justify-between items-center">
+          <h4 className="text-lg font-semibold text-white">Recent Transactions</h4>
+          <button className="text-sm text-gray-400 hover:text-white transition-colors">View all →</button>
         </div>
-      </CardContent>
-    </Card>
+      )}
+
+      {/* Table Section */}
+      <div className={`${!isOverview ? 'bg-[#13131a] rounded-xl border border-[#22222a]' : ''} overflow-x-auto`}>
+        <table className="w-full text-left text-sm text-gray-300">
+          <thead className="bg-[#13131a] text-gray-400 text-xs uppercase border-b border-[#22222a]">
+            <tr>
+              {/* Table Headers with Sort functionality */}
+              <th className="px-6 py-4 font-semibold cursor-pointer hover:text-white transition-colors group" onClick={() => handleSort('date')}>
+                <div className="flex items-center gap-1.5">
+                  DATE <ArrowUpDown size={12} className="opacity-50 group-hover:opacity-100" />
+                </div>
+              </th>
+              <th className="px-6 py-4 font-semibold cursor-pointer hover:text-white transition-colors group" onClick={() => handleSort('description')}>
+                <div className="flex items-center gap-1.5">
+                  DESCRIPTION <ArrowUpDown size={12} className="opacity-50 group-hover:opacity-100" />
+                </div>
+              </th>
+              <th className="px-6 py-4 font-semibold cursor-pointer hover:text-white transition-colors group" onClick={() => handleSort('category')}>
+                <div className="flex items-center gap-1.5">
+                  CATEGORY <ArrowUpDown size={12} className="opacity-50 group-hover:opacity-100" />
+                </div>
+              </th>
+              <th className="px-6 py-4 font-semibold cursor-pointer hover:text-white transition-colors group" onClick={() => handleSort('type')}>
+                <div className="flex items-center gap-1.5">
+                  TYPE <ArrowUpDown size={12} className="opacity-50 group-hover:opacity-100" />
+                </div>
+              </th>
+              <th className="px-6 py-4 font-semibold text-right cursor-pointer hover:text-white transition-colors group" onClick={() => handleSort('amount')}>
+                <div className="flex items-center justify-end gap-1.5">
+                  AMOUNT <ArrowUpDown size={12} className="opacity-50 group-hover:opacity-100" />
+                </div>
+              </th>
+              {!isOverview && role === 'admin' && <th className="px-6 py-4 font-semibold text-center">Actions</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {processedTransactions.length === 0 ? (
+              <tr>
+                <td colSpan={role === 'admin' && !isOverview ? 6 : 5} className="text-center py-10 text-gray-500">
+                  No transactions found matching your filters.
+                </td>
+              </tr>
+            ) : (
+              processedTransactions.map((txn) => (
+                <tr key={txn.id} className="border-b border-[#22222a] hover:bg-[#1a1a24] transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap">{txn.date}</td>
+                  <td className="px-6 py-4 font-medium text-white">{txn.description}</td>
+                  <td className="px-6 py-4">
+                    <span className="bg-[#1f1f2e] text-gray-300 px-2.5 py-1 rounded-md text-xs border border-[#22222a] whitespace-nowrap">
+                      {txn.category}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-1 rounded text-xs capitalize ${txn.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                      {txn.type}
+                    </span>
+                  </td>
+                  <td className={`px-6 py-4 text-right font-medium whitespace-nowrap ${txn.type === 'income' ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {txn.type === 'income' ? '+' : '-'}${txn.amount.toFixed(2)}
+                  </td>
+                  {!isOverview && role === 'admin' && (
+                    <td className="px-6 py-4">
+                      <div className="flex justify-center gap-2">
+                        <button className="p-1.5 bg-[#1f1f2e] rounded text-gray-400 hover:text-white transition-colors border border-[#22222a]" title="Edit">
+                          <Edit2 size={14} />
+                        </button>
+                        <button 
+                          onClick={() => deleteTransaction(txn.id)}
+                          className="p-1.5 bg-[#1f1f2e] rounded text-gray-400 hover:text-red-400 transition-colors border border-[#22222a]"
+                          title="Delete"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
-}
+};
+
+export default TransactionTable;

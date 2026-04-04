@@ -1,21 +1,33 @@
-import React from "react";
-import { Card } from "@/components/ui/card";
+import React from 'react';
+import { Moon, Plus } from 'lucide-react';
 
-export default function TopBar() {
+const TopBar = ({ activeTab, role, setRole }) => {
   return (
-    <div className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Finance Dashboard</h1>
-          <p className="text-sm text-slate-500">
-            Live-style summary powered by derived data
-          </p>
-        </div>
+    <header className="h-16 border-b border-[#22222a] bg-[#0a0a0f]/80 backdrop-blur-md flex items-center justify-between px-6 shrink-0">
+      <h1 className="text-xl font-bold capitalize text-white">{activeTab}</h1>
+      
+      <div className="flex items-center gap-3">
+        <select 
+          value={role} 
+          onChange={(e) => setRole(e.target.value)}
+          className="bg-[#13131a] border border-[#22222a] rounded-full px-3 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-[#8b5cf6] appearance-none cursor-pointer hidden sm:block"
+        >
+          <option value="admin">Admin View</option>
+          <option value="viewer">Viewer View</option>
+        </select>
 
-        <Card className="rounded-2xl px-4 py-2 shadow-sm">
-          <p className="text-sm font-medium text-slate-600">Updated just now</p>
-        </Card>
+        <button className="p-2 border border-[#22222a] rounded-full hover:bg-[#13131a] transition-colors text-gray-300">
+          <Moon size={16} />
+        </button>
+
+        {role === 'admin' && (
+          <button className="flex items-center gap-1.5 bg-[#8b5cf6] hover:bg-violet-600 text-white px-4 py-1.5 rounded-full text-sm font-medium transition-colors shadow-lg shadow-[#8b5cf6]/20">
+            <Plus size={16} /> Add
+          </button>
+        )}
       </div>
-    </div>
+    </header>
   );
-}
+};
+
+export default TopBar;
