@@ -68,6 +68,38 @@ const TransactionTable = ({ transactions, role, deleteTransaction, onEditClick, 
     return processedTransactions.slice(startIndex, startIndex + itemsPerPage);
   }, [processedTransactions, isOverview, currentPage]);
 
+  const handleDownloadCSV = () => {
+  const dataToExport = processedTransactions;
+
+  if (dataToExport.length === 0) return;
+
+  const headers = ["Date", "Description", "Category", "Type", "Amount"];
+
+  const rows = dataToExport.map(txn => [
+    txn.date,
+    txn.description,
+    txn.category,
+    txn.type,
+    txn.amount
+  ]);
+
+  const csvContent = [
+    headers,
+    ...rows
+  ]
+    .map(row => row.join(","))
+    .join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "transactions.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
   return (
     <div className={`space-y-6 animate-fade-in ${isOverview ? 'bg-white dark:bg-[#13131a] rounded-xl border border-gray-200 dark:border-[#22222a] overflow-hidden' : ''} transition-colors duration-200`}>
 
@@ -127,9 +159,12 @@ const TransactionTable = ({ transactions, role, deleteTransaction, onEditClick, 
               ))}
             </select>
 
-            <button className="flex items-center gap-2 bg-white dark:bg-[#13131a] border border-gray-200 dark:border-[#22222a] hover:bg-gray-50 dark:hover:bg-[#1a1a24] text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-lg text-sm transition-colors font-medium">
-              <Download size={16} /> CSV
-            </button>
+            <button
+  onClick={handleDownloadCSV}
+  className="flex items-center gap-2 bg-white dark:bg-[#13131a] border border-gray-200 dark:border-[#22222a] hover:bg-gray-50 dark:hover:bg-[#1a1a24] text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-lg text-sm transition-colors font-medium"
+>
+  <Download size={16} /> CSV
+</button>
           </div>
         </div>
       )}
