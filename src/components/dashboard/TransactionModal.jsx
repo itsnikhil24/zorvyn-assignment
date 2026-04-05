@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 
 const TransactionModal = ({ onClose, onSave, editingTransaction }) => {
-  // Initialize state directly! Because this component will mount fresh every time it opens, 
-  // we don't need a useEffect to watch for changes.
+
   const [formData, setFormData] = useState(() => {
     if (editingTransaction) {
       return {
@@ -29,7 +28,7 @@ const TransactionModal = ({ onClose, onSave, editingTransaction }) => {
     e.preventDefault();
     onSave({
       ...formData,
-      amount: parseFloat(formData.amount) // Ensure amount is passed back as a number
+      amount: parseFloat(formData.amount) 
     });
     onClose();
   };

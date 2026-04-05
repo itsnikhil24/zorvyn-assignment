@@ -5,7 +5,6 @@ import { Trophy, TrendingDown, TrendingUp, Lightbulb } from 'lucide-react';
 const Insights = ({ transactions = [], theme = 'dark' }) => {
   const isDark = theme === 'dark';
 
-  // Process the raw transactions data into chart-friendly formats
   const { 
     topCategories, 
     monthlyData, 
@@ -28,7 +27,7 @@ const Insights = ({ transactions = [], theme = 'dark' }) => {
       .slice(0, 5) // Top 5 categories
       .map((cat, idx) => ({ ...cat, color: colors[idx % colors.length] }));
 
-    // --- 2. Monthly Comparison Data ---
+
     const monthMap = {};
     transactions.forEach(t => {
       const month = t.date.substring(0, 7); // Extract YYYY-MM
@@ -53,7 +52,7 @@ const Insights = ({ transactions = [], theme = 'dark' }) => {
     if (monthlyData.length >= 2) {
       currentExp = monthlyData[monthlyData.length - 1].expense;
       lastExp = monthlyData[monthlyData.length - 2].expense;
-      const diff = lastExp - currentExp; // Positive if expenses went down
+      const diff = lastExp - currentExp; 
       
       if (diff > 0) {
         expenseTrend = { diff, text: `Expenses decreased by $${diff.toFixed(0)} compared to last month.`, isDown: true };

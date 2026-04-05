@@ -156,9 +156,12 @@ const App = () => {
       <div className="flex h-screen bg-gray-100 dark:bg-[#0a0a0f] text-gray-900 dark:text-white font-sans overflow-hidden transition-colors duration-300">
         <aside className="w-64 border-r border-gray-200 dark:border-[#22222a] bg-white dark:bg-[#0a0a0f] flex flex-col hidden md:flex transition-colors duration-200">
           <div className="h-16 flex items-center px-6">
-            <div className="flex items-center gap-2 text-xl font-bold text-[#8b5cf6] tracking-wide">
-              <div className="w-2 h-2 rounded-full bg-[#8b5cf6]"></div>
-              Finflow
+            <div className="flex items-center gap-2">
+              <img
+                src="./src/assets/logo.png"   
+                alt="Zorvyn Logo"
+                className="h-8 w-auto object-contain"
+              />
             </div>
           </div>
 
@@ -203,7 +206,7 @@ const App = () => {
         </main>
       </div>
 
-      {/* Conditionally rendering the modal here fixes the useEffect warning! */}
+      
       {isModalOpen && (
         <TransactionModal
           onClose={() => setIsModalOpen(false)}
