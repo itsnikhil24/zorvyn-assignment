@@ -30,18 +30,18 @@ npm run dev
 
 # 📌 Features
 
-- 🔐 Role-Based Access Control (RBAC)
+- **🔐 Role-Based Access Control (RBAC)**
     * **Admin View**: Full access to manage financial data. Admins can add new transactions, edit existing ones, and delete records.
     * **Viewer View**: A read-only mode perfect for sharing financial status. Viewers can see all charts, insights, and tables, and export data, but cannot alter the underlying transactions.
 
-- 🎨 Theming & UI
+- **🎨 Theming & UI**
     * **Dark & Light Mode**: Fully integrated theme toggling that adjusts all UI elements, charts, and table styles instantly for optimal viewing in any environment.
 
     * **Responsive Design**: A mobile-friendly layout that utilizes a hidden sidebar on smaller screens and adapts complex charts to fit any device width.
 
     * **Smooth Animations**: Incorporates fade-in animations and smooth color transitions to enhance the user experience when switching tabs or toggling themes.
 
-- 📊 Dashboard Overview
+- **📊 Dashboard Overview**
 
 
     * **Stat Cards**: At-a-glance summaries of your Total Balance, Total Income, Total Expenses, and Total Transactions. Features dynamic color-coding and trend icons (up/down arrows) based on positive or negative balances.
@@ -52,7 +52,7 @@ npm run dev
 
     * **Recent Transactions**: A quick-view table showing the latest 5 transactions with a shortcut to the full transaction ledger.
 
-- 💳 Transaction Management
+- **💳 Transaction Management**
 
 
   * **Full CRUD Capabilities**: Add, edit, and delete transactions via an intuitive modal form (available to Admins).
