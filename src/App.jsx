@@ -7,6 +7,7 @@ import SpendingBreakdownChart from './components/dashboard/SpendingBreakdownChar
 import TransactionTable from './components/dashboard/TransactionsTable';
 import Insights from './components/dashboard/Insights';
 import TransactionModal from './components/dashboard/TransactionModal';
+import logo from './assets/logo.png';
 
 import { initialTransactions } from './data/dashboardData';
 
@@ -158,7 +159,7 @@ const App = () => {
           <div className="h-16 flex items-center px-6">
             <div className="flex items-center gap-2">
               <img
-                src="./src/assets/logo.png"   
+                src={logo}
                 alt="Zorvyn Logo"
                 className="h-8 w-auto object-contain"
               />
@@ -206,7 +207,7 @@ const App = () => {
         </main>
       </div>
 
-      
+
       {isModalOpen && (
         <TransactionModal
           onClose={() => setIsModalOpen(false)}
