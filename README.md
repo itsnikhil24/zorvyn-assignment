@@ -8,17 +8,25 @@ https://zorvyn-assignment-ooq9.onrender.com
 
 
 # 📦 Installation & Setup
-## Clone the repository
-git clone https://github.com/itsnikhil24/zorvyn-assignment.git
+ - Clone the repository
+```bash  
+git clone https://github.com/itsnikhil24/zorvyn-assignment.git 
+```
 
-## Navigate to project folder
+ -  Navigate to project folder
+```bash
 cd zorvyn-assignment
+ ``` 
 
-## Install dependencies
+ -  Install dependencies
+```bash
 npm install
+   ``` 
 
-## Run the app
+ -  Run the app
+```bash
 npm run dev
+   ``` 
 
 # 📌 Features
 
